@@ -1,0 +1,22 @@
+# 환경변수
+.env
+.env.*
+
+# 데이터 파일 (실데이터 제외)
+*.xlsx
+*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
