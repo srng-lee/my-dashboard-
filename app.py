@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import requests
+import numpy as np
 from pathlib import Path
-from datetime import date
+from datetime import date, timedelta
 
 DATA_FILE = Path(__file__).parent / "merged_sales.xlsx"
 
@@ -11,22 +12,33 @@ DATA_FILE = Path(__file__).parent / "merged_sales.xlsx"
 st.set_page_config(page_title="매출 대시보드", layout="wide")
 st.title("매출 대시보드")
 
-# --- 데이터 로드 ---
-if not DATA_FILE.exists():
-    st.error(
-        "데이터 파일(merged_sales.xlsx)을 찾을 수 없습니다. "
-        "app.py와 같은 폴더에 파일을 넣고 새로고침해 주세요."
-    )
-    st.stop()
-
+# --- 데이터 로드 (파일 없으면 더미 자동 생성) ---
 @st.cache_data
-def load_data(path: Path) -> pd.DataFrame:
-    df = pd.read_excel(path)
-    df["날짜"] = pd.to_datetime(df["날짜"])
-    df["금액"] = pd.to_numeric(df["금액"], errors="coerce").fillna(0).astype(int)
-    return df
+def load_data(path: Path) -> tuple[pd.DataFrame, bool]:
+    if path.exists():
+        df = pd.read_excel(path)
+        df["날짜"] = pd.to_datetime(df["날짜"])
+        df["금액"] = pd.to_numeric(df["금액"], errors="coerce").fillna(0).astype(int)
+        return df, False
 
-df = load_data(DATA_FILE)
+    # 더미 데이터 생성
+    rng = np.random.default_rng(42)
+    start = date(2024, 1, 1)
+    rows = [
+        {
+            "날짜": pd.Timestamp(start + timedelta(days=int(rng.integers(0, 180)))),
+            "지점": rng.choice(["A", "B"]),
+            "상품": rng.choice(["노트북", "스마트폰", "태블릿"]),
+            "금액": int(rng.integers(200_000, 2_000_000)),
+        }
+        for _ in range(180)
+    ]
+    return pd.DataFrame(rows), True
+
+df, is_dummy = load_data(DATA_FILE)
+
+if is_dummy:
+    st.info("merged_sales.xlsx 파일을 찾을 수 없어 더미 데이터로 표시 중입니다.")
 
 # --- 사이드바 필터 ---
 st.sidebar.header("필터")

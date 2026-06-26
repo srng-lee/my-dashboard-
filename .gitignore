@@ -2,8 +2,9 @@
 .env
 .env.*
 
-# 데이터 파일 (실데이터 제외)
-*.xlsx
+# 데이터 파일 (원본 지점별 파일만 제외, merged는 포함)
+store_a.xlsx
+store_b.xlsx
 *.csv
 
 # Python
